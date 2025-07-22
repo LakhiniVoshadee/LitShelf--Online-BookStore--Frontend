@@ -1,7 +1,7 @@
 import axios from "axios";
 
 
-export const backendApi = axios.create({baseURL: 'http://localhost:3000/api'});
+export const backendApi = axios.create({baseURL: 'http://localhost:3001/api'});
 
 // Add a request interceptor
 backendApi.interceptors.request.use(
