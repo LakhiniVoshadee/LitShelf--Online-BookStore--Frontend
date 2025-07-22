@@ -1,0 +1,112 @@
+
+    /* Modern contact form styling with navy blue (#1B263B), black (#0B0C10), and white (#FFFFFF) */
+.form-container {
+    max-width: 600px;
+    margin: 60px auto;
+    padding: 32px;
+    background-color: #FFFFFF; /* White background for card */
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(11, 12, 16, 0.1); /* Subtle shadow with black tint */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-container:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(11, 12, 16, 0.15); /* Enhanced shadow on hover */
+}
+
+.form-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0B0C10; /* Black for heading */
+    text-align: center;
+    margin-bottom: 24px;
+    letter-spacing: -0.025em;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* Increased spacing for modern look */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0B0C10; /* Black for labels */
+    margin-bottom: 8px;
+    transition: color 0.2s ease;
+}
+
+.form-input {
+    padding: 12px 16px;
+    background-color: #F8FAFC; /* Light gray for input background */
+    border: 1px solid #1B263B; /* Navy blue border */
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #0B0C10; /* Black text */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #415A77; /* Lighter navy blue for focus */
+    box-shadow: 0 0 0 3px rgba(27, 38, 59, 0.2); /* Navy blue focus ring */
+}
+
+.form-textarea {
+    padding: 12px 16px;
+    background-color: #F8FAFC; /* Light gray for textarea */
+    border: 1px solid #1B263B; /* Navy blue border */
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #0B0C10; /* Black text */
+    min-height: 120px;
+    resize: vertical;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: #415A77; /* Lighter navy blue for focus */
+    box-shadow: 0 0 0 3px rgba(27, 38, 59, 0.2); /* Navy blue focus ring */
+}
+
+.error-text {
+    color: #EF4444; /* Red for errors, consistent with prior styles */
+    font-size: 0.875rem;
+    margin-top: 6px;
+    font-weight: 400;
+}
+
+.submit-btn {
+    padding: 12px 24px;
+    background-color: #1B263B; /* Navy blue button */
+    color: #FFFFFF; /* White text */
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 16px;
+}
+
+.submit-btn:hover {
+    background-color: #415A77; /* Lighter navy blue on hover */
+    transform: translateY(-2px);
+}
+
+.submit-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(27, 38, 59, 0.3); /* Navy blue focus ring */
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
