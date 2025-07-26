@@ -8,7 +8,7 @@ import {ShoppingCart} from "../../../pages/ShoppingCart/ShoppingCart.tsx";
 
 export function MainContent() {
     return (
-        <div className="flex justify-center items-center bg-gray-100 min-h-screen">
+        <div>
             <Routes>
                 <Route path="/" element={<Home/>}></Route>
                 <Route path="/about" element={<About/>}></Route>
