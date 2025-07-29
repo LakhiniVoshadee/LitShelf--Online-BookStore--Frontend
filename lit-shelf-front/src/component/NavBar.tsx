@@ -54,8 +54,13 @@ export default function NavBar() {
                     whileTap={{ scale: 0.95 }}
                     className="flex items-center"
                 >
-                    <a href="/" className="text-2xl font-bold text-black tracking-tight flex items-center">
-                        <span className="text-orange-500 mr-2">📚</span>LitShelf
+                    <a href="/" className="flex items-center space-x-2">
+                        <img 
+                            src="/src/assets/logo.png" 
+                            alt="LitShelf Logo" 
+                            className="h-10 w-auto"
+                        />
+                        <span className="text-2xl font-bold text-black tracking-tight">LitShelf</span>
                     </a>
                 </motion.div>
 
