@@ -1,69 +1,107 @@
-# React + TypeScript + Vite
+# LitShelf – Online Bookstore Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React + TypeScript + Tailwind CSS frontend for LitShelf, an online bookstore. This application provides robust user and entity management, secure authentication & authorization, admin analytics dashboard, notifications, and optional file upload support.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **User Management**: CRUD operations for users (create, read, update, delete).
+- **Entity Management**: CRUD operations for bookstore entities (products/items, customers, orders, payment details).
+- **Authentication & Authorization**: Secure JWT-based authentication. Only authenticated users can access the app, with granular permissions based on user roles.
+- **Admin Dashboard & Analytics**: Admin users can view business analytics and monitor current direction.
+- **Notifications**: Email or push notifications (e.g., payment confirmation emails).
+- **File Uploads** *(Optional)*: Upload files as required by the application.
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **React**: UI development
+- **TypeScript**: Type safety
+- **Tailwind CSS**: Styling
+- **JWT**: Authentication & Authorization
+- **Axios/Fetch**: API communication
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### Prerequisites
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js (>= 18)
+- npm or yarn
+
+### Installation
+
+```bash
+git clone https://github.com/LakhiniVoshadee/LitShelf--Online-BookStore--Frontend.git
+cd LitShelf--Online-BookStore--Frontend/lit-shelf-front
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Configuration
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Edit environment variables in `.env` for API endpoints, JWT secret, email configuration, etc.
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Running the App
+
+```bash
+npm start
+# or
+yarn start
 ```
+
+## Folder Structure
+
+```
+lit-shelf-front/
+ ├── src/
+ │   ├── components/        # Reusable UI components
+ │   ├── pages/             # Route-based pages (Home, Login, Dashboard, etc.)
+ │   ├── services/          # API services (users, entities, auth)
+ │   ├── hooks/             # Custom React hooks
+ │   ├── utils/             # Utility functions
+ │   ├── types/             # TypeScript types/interfaces
+ │   └── App.tsx
+ ├── public/
+ └── tailwind.config.js
+```
+
+## Key Modules
+
+### Authentication & Authorization
+
+- JWT stored in httpOnly cookies or localStorage.
+- Role-based access: Admin, Customer, etc.
+- Protected routes using custom hooks (e.g., `useAuth`).
+
+### User & Entity Management
+
+- CRUD screens for users, products/items, customers, orders, payments.
+- API integration for backend operations.
+
+### Admin Dashboard
+
+- View business metrics, sales analytics, user statistics.
+- Responsive charts and tables.
+
+### Notifications
+
+- Email confirmation for payments.
+- Push notifications (optional, if supported).
+
+### File Uploads *(Optional)*
+
+- Upload product images, documents, etc.
+- Preview & validation.
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some feature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License.
+
+---
+
+**Contact:** [LakhiniVoshadee](https://github.com/LakhiniVoshadee)
