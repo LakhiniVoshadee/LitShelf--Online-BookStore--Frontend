@@ -1,13 +1,13 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { FaUsers, FaBook, FaExchangeAlt } from "react-icons/fa";
 import type { LibraryMemberUser, LibraryMemberUserForm } from "../models/User.ts";
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
-import {addUserMember, deleteUserMember, getAllUser, updateUserMember} from "../service/userService.ts";
-import type {Book, BookForm} from "../models/Books.ts";
-import {bookSave, bookUpdate, deleteBook, getAllBook} from "../service/bookService.ts";
-import type {BorrowBook, BorrowBookForm} from "../models/BorrowBook.ts";
-import {getAllBorrowBook, overDueBorrowBook, saveBorrowBook, updateBorrowBook} from "../service/borrowBookService.ts";
+import { addUserMember, deleteUserMember, getAllUser, updateUserMember } from "../service/userService.ts";
+import type { Book, BookForm } from "../models/Books.ts";
+import { bookSave, bookUpdate, deleteBook, getAllBook } from "../service/bookService.ts";
+import type { BorrowBook, BorrowBookForm } from "../models/BorrowBook.ts";
+import { getAllBorrowBook, overDueBorrowBook, saveBorrowBook, updateBorrowBook } from "../service/borrowBookService.ts";
 
 export function HomePage() {
     const [activeTab, setActiveTab] = useState("members");
@@ -30,7 +30,6 @@ export function HomePage() {
         handleCheckAllOverDue()
     }, []);
 
-
     //books...............................................................................................
     const [books, setBooks] = useState<Book[]>([]);
     const [bookFrom, setBookFrom] = useState<BookForm>({
@@ -43,7 +42,6 @@ export function HomePage() {
 
     const [click, setIsClick] = useState(false);
     const [bookClick, setBookIsClick] = useState(false);
-
 
     //borrowBooks....................................................................................................
     const [borrowForm, setBorrowForm] = useState<BorrowBookForm>({
@@ -60,7 +58,6 @@ export function HomePage() {
     const [borrowRecords, setBorrowRecords] = useState<BorrowBook[]>([]);
     const [borrowRecords_2, setBorrowRecords_2] = useState<BorrowBook[]>([]);
     const [overDueBorrowRecords, setOverDueBorrowRecords] = useState<BorrowBook[]>([]);
-
 
     const showSuccessAlert = (title: string, html: string) => {
         return MySwal.fire({
@@ -101,19 +98,15 @@ export function HomePage() {
         });
     };
 
-
-
-
     //Handle Users...............................................................................
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value
         }));
     };
     const handleGetAllUser = async () => {
-
         try {
             const response = await getAllUser();
             if (response.status === 200) {
@@ -122,18 +115,15 @@ export function HomePage() {
             } else {
                 await showErrorAlert("Error", "Failed to fetch members. Please try again.");
             }
-
         } catch (e) {
             console.log(e);
         }
-
     }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             console.log(formData);
             const response = await addUserMember(formData);
-
 
             if (response.status === 201) {
                 setFormData({
@@ -143,7 +133,6 @@ export function HomePage() {
                     address: ""
                 });
                 await handleGetAllUser()
-
                 await showSuccessAlert("Success", "Member added successfully!");
             } else {
                 await showErrorAlert("Error", "Failed to add member. Please try again.");
@@ -152,8 +141,6 @@ export function HomePage() {
             console.error("Error adding member:", e);
             await showErrorAlert("Error", "Failed to add member. Please try again.");
         }
-
-
     };
     const handleRowClick = (user: LibraryMemberUser) => {
         console.log("Row clicked:", user);
@@ -206,10 +193,9 @@ export function HomePage() {
         }
     }
 
-
     //Handle Books................................................................................
     const handleBookInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
         setBookFrom(prev => ({
             ...prev,
             [name]: value
@@ -244,7 +230,6 @@ export function HomePage() {
             console.log(e)
             showErrorAlert("Error", "Failed to add book. Please try again.");
         }
-
     }
     const handleBookUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -268,9 +253,7 @@ export function HomePage() {
         } catch (e) {
             console.log(e)
             await showErrorAlert("Error", "Failed to add book. Please try again.");
-
         }
-
     }
     const handleBookDelete = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -295,7 +278,6 @@ export function HomePage() {
             console.log(e)
             await showErrorAlert("Error", "Failed to delete book. Please try again.");
         }
-
     }
     const handleBookRowClick = (book: Book) => {
         console.log("Row clicked:", book);
@@ -317,17 +299,15 @@ export function HomePage() {
         }
     }
 
-
-//borrow......................................................
+    //borrow......................................................
 
     const handleBorrowInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
         setBorrowForm(prev => ({
             ...prev,
             [name]: value
         }));
     };
-
 
     const handleBorrowSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -352,23 +332,18 @@ export function HomePage() {
             } else {
                 await showErrorAlert("Error", "Failed to borrow book. Please try again.");
             }
-
         } catch (e) {
             console.error("Error borrowing book:", e);
             await showErrorAlert("Error", "Failed to borrow book. Please try again.");
         }
-
     };
-
 
     const handleGetAllBorrowBook = async () => {
         try {
             const response = await getAllBorrowBook();
             if (response.status === 200) {
-
                 const borrowRecords: BorrowBook[] = response.bookBorrows;
                 setBorrowRecords(borrowRecords);
-
 
                 const borrowRecordsStatusBorrow: BorrowBook[] = borrowRecords.filter(BR => BR.status === "borrowed");
                 setBorrowRecords_2(borrowRecordsStatusBorrow);
@@ -377,7 +352,6 @@ export function HomePage() {
                     BR.status === "borrowed" && new Date(BR.returnDate) < new Date()
                 );
                 setOverDueBorrowRecords(overDueBorrowBook);
-
             } else {
                 await showErrorAlert("Error", "Failed to fetch borrow records. Please try again.");
             }
@@ -385,7 +359,6 @@ export function HomePage() {
             console.log(e);
             await showErrorAlert("Error", "Failed to fetch borrow records. Please try again.");
         }
-
     }
 
     const handleCheckAllOverDue = async () => {
@@ -415,14 +388,12 @@ export function HomePage() {
             } else {
                 await showErrorAlert("Error", "Failed to return book. Please try again.");
             }
-
         } catch (e) {
             console.log(e)
         }
-
     };
     const handleSendEmail = async (recordeId: string) => {
-        try{
+        try {
             const borrowID = recordeId;
 
             const borrowRecord: BorrowBook | undefined = overDueBorrowRecords.find(record => record._id === borrowID);
@@ -439,62 +410,67 @@ export function HomePage() {
             } else {
                 await showErrorAlert("Error", "Failed to send email. Please try again.");
             }
-
-        }catch (e){
+        } catch (e) {
             console.log(e);
             await showErrorAlert("Error", "Failed to send email. Please try again.");
         }
-
     }
 
-        return (
-        <div className="flex h-screen bg-gray-100">
-            <div className="w-64 bg-blue-800 text-white p-4">
-                <h1 className="text-2xl font-bold mb-8">Library System</h1>
+    return (
+        <div className="flex h-screen bg-gradient-to-br from-beige-100 to-beige-200">
+            <div className="w-64 bg-white p-4 shadow-lg">
+                <div className="text-center mb-8">
+                    <div className="inline-block bg-orange-500 rounded-full p-2 mb-2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                        </svg>
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-800">Library System</h1>
+                </div>
                 <nav>
                     <ul className="space-y-2">
                         <li>
                             <button
                                 onClick={() => setActiveTab("members")}
-                                className={`flex items-center w-full p-2 rounded-lg ${activeTab === "members" ? "bg-blue-700" : "hover:bg-blue-600"}`}
+                                className={`flex items-center w-full p-2 rounded-lg ${activeTab === "members" ? "text-orange-500 bg-orange-100" : "text-gray-700 hover:bg-gray-200"}`}
                             >
-                                <FaUsers className="mr-3"/>
+                                <FaUsers className="mr-3" />
                                 Members
                             </button>
                         </li>
                         <li>
                             <button
                                 onClick={() => setActiveTab("books")}
-                                className={`flex items-center w-full p-2 rounded-lg ${activeTab === "books" ? "bg-blue-700" : "hover:bg-blue-600"}`}
+                                className={`flex items-center w-full p-2 rounded-lg ${activeTab === "books" ? "text-orange-500 bg-orange-100" : "text-gray-700 hover:bg-gray-200"}`}
                             >
-                                <FaBook className="mr-3"/>
+                                <FaBook className="mr-3" />
                                 Books
                             </button>
                         </li>
                         <li>
                             <button
                                 onClick={() => setActiveTab("borrow")}
-                                className={`flex items-center w-full p-2 rounded-lg ${activeTab === "borrow" ? "bg-blue-700" : "hover:bg-blue-600"}`}
+                                className={`flex items-center w-full p-2 rounded-lg ${activeTab === "borrow" ? "text-orange-500 bg-orange-100" : "text-gray-700 hover:bg-gray-200"}`}
                             >
-                                <FaExchangeAlt className="mr-3"/>
+                                <FaExchangeAlt className="mr-3" />
                                 Borrow Books
                             </button>
                         </li>
                         <li>
                             <button
                                 onClick={() => setActiveTab("history")}
-                                className={`flex items-center w-full p-2 rounded-lg ${activeTab === "history" ? "bg-blue-700" : "hover:bg-blue-600"}`}
+                                className={`flex items-center w-full p-2 rounded-lg ${activeTab === "history" ? "text-orange-500 bg-orange-100" : "text-gray-700 hover:bg-gray-200"}`}
                             >
-                                <FaExchangeAlt className="mr-3"/>
+                                <FaExchangeAlt className="mr-3" />
                                 History Borrow Books
                             </button>
                         </li>
                         <li>
                             <button
                                 onClick={() => setActiveTab("overDue")}
-                                className={`flex items-center w-full p-2 rounded-lg ${activeTab === "overDue" ? "bg-blue-700" : "hover:bg-blue-600"}`}
+                                className={`flex items-center w-full p-2 rounded-lg ${activeTab === "overDue" ? "text-orange-500 bg-orange-100" : "text-gray-700 hover:bg-gray-200"}`}
                             >
-                                <FaExchangeAlt className="mr-3"/>
+                                <FaExchangeAlt className="mr-3" />
                                 OverDue Borrow Books
                             </button>
                         </li>
@@ -606,7 +582,6 @@ export function HomePage() {
                                         </>
                                     )}
                                 </div>
-
                             </form>
                         </div>
 
@@ -733,7 +708,6 @@ export function HomePage() {
                                             required
                                         />
                                     </div>
-
                                 </div>
 
                                 <div className="flex flex-wrap gap-4 mt-4">
@@ -766,7 +740,6 @@ export function HomePage() {
                                         </>
                                     )}
                                 </div>
-
                             </form>
                         </div>
 
@@ -890,7 +863,6 @@ export function HomePage() {
                                         />
                                     </div>
 
-
                                     {/* Status */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -918,7 +890,6 @@ export function HomePage() {
                                             <option value="lending">lending</option>
                                         </select>
                                     </div>
-
                                 </div>
 
                                 <div className="flex gap-4 mt-4">
@@ -928,12 +899,9 @@ export function HomePage() {
                                     >
                                         Save Record
                                     </button>
-
-
                                 </div>
                             </form>
                         </div>
-
 
                         <div className="bg-white p-6 rounded-lg shadow-md">
                             <h3 className="text-xl font-semibold mb-4">Borrow Records</h3>
@@ -1058,8 +1026,7 @@ export function HomePage() {
                                                     <div className="text-sm font-medium text-gray-900">
                                                         {books.find(b => b._id === record.bookId)?.title || 'Unknown'}
                                                     </div>
-                                                    <div className="text-sm text-gray-
-500">
+                                                    <div className="text-sm text-gray-500">
                                                         {books.find(b => b._id === record.bookId)?.author || ''}
                                                     </div>
                                                 </td>
@@ -1085,14 +1052,11 @@ export function HomePage() {
                                                         {record.payStatus}
                                                     </span>
                                                 </td>
-
                                             </tr>
-
                                         ))}
                                         </tbody>
                                     </table>
                                 </div>
-
                             )}
                         </div>
                     </div>
@@ -1138,8 +1102,7 @@ export function HomePage() {
                                                     <div className="text-sm font-medium text-gray-900">
                                                         {books.find(b => b._id === record.bookId)?.title || 'Unknown'}
                                                     </div>
-                                                    <div className="text-sm text-gray-
-500">
+                                                    <div className="text-sm text-gray-500">
                                                         {books.find(b => b._id === record.bookId)?.author || ''}
                                                     </div>
                                                 </td>
@@ -1173,19 +1136,15 @@ export function HomePage() {
                                                         Send Email
                                                     </button>
                                                 </td>
-
                                             </tr>
-
                                         ))}
                                         </tbody>
                                     </table>
                                 </div>
-
                             )}
                         </div>
                     </div>
                 )}
-
             </div>
         </div>
     );
