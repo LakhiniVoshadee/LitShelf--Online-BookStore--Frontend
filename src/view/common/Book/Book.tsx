@@ -1,140 +1,124 @@
-import { ModifyCart } from "../ModifyCart/ModifyCart.tsx";
-import type { BookData } from "../../../model/BookData.ts";
+import  { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import type { BookData } from "../../../model/BookData.ts";
 import type { AppDispatch, RootState } from "../../../store/store.ts";
-import { addItemToCart } from "../../../slices/cartSlice.ts";
-import { FaRegHeart, FaHeart, FaUser } from "react-icons/fa";
-import { MdOutlineShoppingCart } from "react-icons/md";
-import { BsBook } from "react-icons/bs";
+import { addToCart } from "../../../slices/cartSlice.ts";
 
-type BookProps = {
+interface BookProps {
     data: BookData;
-};
-
-const images: Record<string, string> = import.meta.glob("../../../assets/books/*.{png,jpg,jpeg}", {
-    eager: true,
-    import: "default",
-});
-
-const genreColors: Record<string, string> = {
-    Fiction: "bg-orange-100 text-orange-600",
-    Fantasy: "bg-purple-100 text-purple-600",
-    "Self-Help": "bg-orange-100 text-orange-600",
-    Technology: "bg-blue-100 text-blue-600",
-    // Add more genre colors as needed
-};
+}
 
 export function Book({ data }: BookProps) {
     const dispatch = useDispatch<AppDispatch>();
-    const item = useSelector((state: RootState) =>
-        state.cart.items.find((cartItem) => cartItem.book.id === data.id)
-    );
+    const { loading } = useSelector((state: RootState) => state.cart);
+    const [quantity, setQuantity] = useState(1);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const role = localStorage.getItem('role');
 
-    // Find the correct image by matching the filename (ignoring path)
-    const imageKey = Object.keys(images).find((key) =>
-        key.endsWith(data.coverImage) || key.endsWith(data.coverImage.split(".")[0])
-    );
-    const image = imageKey ? images[imageKey] : null;
-    const fallbackImage = "/placeholder-image.jpg"; // Ensure this file exists in public/
+    const handleAddToCart = async () => {
+        if (role !== 'customer') {
+            alert('Only customers can add items to cart');
+            return;
+        }
 
-    // Stock status
-    let stockLabel = "In Stock";
-    let stockColor = "bg-green-100 text-green-700";
-    if (data.stock === 0) {
-        stockLabel = "Out of Stock";
-        stockColor = "bg-gray-100 text-gray-500";
-    } else if (data.stock < 5) {
-        stockLabel = "Low Stock";
-        stockColor = "bg-yellow-100 text-yellow-700";
-    }
-
-    // Genre color
-    const genreClass = genreColors[data.genre] || "bg-gray-100 text-gray-700";
+        try {
+            await dispatch(addToCart({ bookId: data.id, quantity })).unwrap();
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
+        } catch (error: any) {
+            console.error('Failed to add to cart:', error);
+            alert(error.message || 'Failed to add item to cart');
+        }
+    };
 
     return (
-        <div className="w-full max-w-[370px] mx-auto mb-7">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 transition-all duration-200 hover:shadow-xl hover:-translate-y-1">
-                {/* Card Header */}
-                <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-b from-orange-50 to-white relative">
-                    <div className={`absolute left-5 top-4 px-3 py-1 rounded-lg font-semibold text-xs shadow ${stockColor}`}>
-                        {stockLabel}
-                    </div>
-                    <div className="flex-1 flex justify-center">
-                        <BsBook className="text-orange-400 text-[2.2rem]" />
-                    </div>
-                    <button
-                        className="absolute right-5 top-4 bg-white/80 p-2 rounded-full shadow hover:bg-orange-100 transition"
-                        aria-label="Favorite"
-                    >
-                        {item ? <FaHeart className="text-orange-400 text-lg" /> : <FaRegHeart className="text-gray-400 text-lg" />}
-                    </button>
+        <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 w-80 transform hover:scale-105">
+            <div className="relative overflow-hidden rounded-xl mb-4">
+                <img
+                    src={data.coverImage}
+                    alt={data.title}
+                    className="w-full h-64 object-cover transition-transform duration-300 hover:scale-110"
+                />
+                <div className="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                    {data.genre}
                 </div>
-                {/* Book Cover */}
-                <div className="relative w-full h-48 flex items-center justify-center bg-gray-50">
-                    <img
-                        className="w-28 h-40 object-cover rounded-lg border border-gray-200 shadow-sm"
-                        src={image || fallbackImage}
-                        alt={data.title}
-                        onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = fallbackImage;
-                            target.classList.add("opacity-50");
-                        }}
-                    />
-                    {/* Quick View Button */}
-                    <button className="absolute top-3 left-1/2 -translate-x-1/2 bg-white text-gray-800 font-semibold px-4 py-1 rounded-lg shadow hover:bg-orange-50 transition-all border border-gray-200 text-sm">
-                        Quick View
-                    </button>
+            </div>
+
+            <div className="space-y-3">
+                <h3 className="text-xl font-bold text-gray-900 line-clamp-2">{data.title}</h3>
+                <p className="text-gray-600 font-medium">by {data.author}</p>
+
+                <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold text-orange-600">
+                        {data.currency} {data.price}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                        Stock: {data.stock}
+                    </div>
                 </div>
-                {/* Card Body */}
-                <div className="p-5">
-                    <div className="flex items-center mb-1 justify-between">
-                        <span className={`inline-block ${genreClass} font-bold text-xs px-3 py-1 rounded-md`}>
-                            {data.genre}
-                        </span>
-                        <span className="text-gray-400 text-sm flex items-center gap-1">
-                            <svg className="inline-block h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                <path d="M8 7V3m8 4V3M3 11h18M5 19h14a2 2 0 002-2v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7a2 2 0 002 2z" />
-                            </svg>
-                            {data.publicationYear}
-                        </span>
-                    </div>
-                    <h3 className="text-gray-900 text-[1.2rem] font-bold mb-1 line-clamp-2 hover:text-orange-500 transition-colors duration-200">
-                        {data.title}
-                    </h3>
-                    <div className="flex items-center gap-2 text-gray-600 text-sm mb-2">
-                        <FaUser className="inline-block mr-1" />
-                        <span>{data.author}</span>
-                    </div>
-                    {/* Description */}
-                    <p className="text-gray-600 text-[0.98rem] mb-2 line-clamp-2">{data.description}</p>
-                    <div className="flex items-center gap-8 mb-3 text-xs text-gray-500">
-                        <span>{data.pages} pages</span>
-                        <span>{data.language}</span>
+
+                <p className="text-gray-700 text-sm line-clamp-3">{data.description}</p>
+
+                <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex justify-between">
+                        <span>Publisher:</span>
                         <span>{data.publisher}</span>
                     </div>
-                    {/* Price and Cart */}
-                    <div className="flex items-center justify-between mt-3">
-                        <div className="flex flex-col">
-                            <span className="text-orange-600 font-bold text-[1.45rem]">
-                                {data.price.toFixed(2)}
-                            </span>
-                            <span className="text-gray-500 text-xs">{data.currency}</span>
-                        </div>
-                        {item ? (
-                            <ModifyCart data={{ book: data }} />
-                        ) : (
-                            <button
-                                className="flex items-center gap-2 bg-orange-500 text-white px-5 py-2 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300 transition-all font-medium text-base shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                onClick={() => dispatch(addItemToCart(data))}
-                                disabled={data.stock === 0}
-                            >
-                                <MdOutlineShoppingCart className="text-lg" />
-                                {data.stock > 0 ? "Add to Cart" : "Out of Stock"}
-                            </button>
-                        )}
+                    <div className="flex justify-between">
+                        <span>Year:</span>
+                        <span>{data.publicationYear}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span>Pages:</span>
+                        <span>{data.pages}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span>Language:</span>
+                        <span>{data.language}</span>
                     </div>
                 </div>
+
+                {role === 'customer' && data.stock > 0 && (
+                    <div className="space-y-3 pt-4 border-t">
+                        <div className="flex items-center space-x-3">
+                            <label className="text-sm font-medium text-gray-700">Quantity:</label>
+                            <select
+                                value={quantity}
+                                onChange={(e) => setQuantity(Number(e.target.value))}
+                                className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            >
+                                {Array.from({ length: Math.min(data.stock, 10) }, (_, i) => (
+                                    <option key={i + 1} value={i + 1}>
+                                        {i + 1}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <button
+                            onClick={handleAddToCart}
+                            disabled={loading}
+                            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold py-3 rounded-xl hover:from-orange-600 hover:to-orange-700 disabled:from-orange-300 disabled:to-orange-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+                        >
+                            {loading ? 'Adding...' : 'Add to Cart'}
+                        </button>
+
+                        {showSuccess && (
+                            <div className="text-green-600 text-sm text-center bg-green-50 py-2 rounded-lg">
+                                ✓ Added to cart successfully!
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {role === 'customer' && data.stock === 0 && (
+                    <button
+                        disabled
+                        className="w-full bg-gray-400 text-white font-semibold py-3 rounded-xl cursor-not-allowed"
+                    >
+                        Out of Stock
+                    </button>
+                )}
             </div>
         </div>
     );

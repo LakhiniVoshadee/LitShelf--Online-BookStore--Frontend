@@ -1,45 +1,92 @@
-import type {CartItem} from "../model/CartItem.ts";
-import {createSlice, type PayloadAction} from "@reduxjs/toolkit";
-import type {BookData} from "../model/BookData.ts";
+import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { backendApi } from "../api.ts";
+
+
+export interface CartItem {
+    bookId: number;
+    quantity: number;
+}
+
+export interface Cart {
+    _id: string;
+    userId: number;
+    items: CartItem[];
+    createdAt: string;
+    updatedAt: string;
+}
 
 interface CartState {
-    items: CartItem[];
+    cart: Cart | null;
+    loading: boolean;
+    error: string | null;
 }
 
 const initialState: CartState = {
-    items: []
-}
+    cart: null,
+    loading: false,
+    error: null
+};
+
+// Async thunk to add item to cart via backend
+export const addToCart = createAsyncThunk(
+    'cart/addToCart',
+    async ({ bookId, quantity }: { bookId: number; quantity: number }) => {
+        const response = await backendApi.post('/cart/add', {
+            bookId,
+            quantity
+        });
+        return response.data;
+    }
+);
+
+// Async thunk to get cart from backend
+export const getCart = createAsyncThunk(
+    'cart/getCart',
+    async () => {
+        const response = await backendApi.get('/cart');
+        return response.data;
+    }
+);
 
 const cartSlice = createSlice({
     name: 'cart',
     initialState,
     reducers: {
-        addItemToCart(state: CartState, action: PayloadAction<BookData>) {
-
-            const existingItem = state.items.find((item) => item.book.id === action.payload.id) // Find the item in the cart with the same ID
-            if (!existingItem) { // If the item doesn't exist, add it to the cart
-                state.items.push({book: action.payload, bookCount: 1}); // Add the item to the cart with a count of 1
-            }
+        clearCart(state) {
+            state.cart = null;
         },
-
-        increaseQuantity(state: CartState, action: PayloadAction<number>) { // Increase the quantity of an item
-
-            const item = state.items.find((existingItem) => existingItem.book.id === action.payload);
-            if (item) {
-                item.bookCount += 1; // Increase the item count
-            }
-        },
-        decreaseQuantity(state: CartState, action: PayloadAction<number>) {  // Decrease the quantity of an item
-            const item = state.items.find((existingItem) => existingItem.book.id === action.payload);
-            if (item && item.bookCount > 1) { // Check if the item count is greater than 1
-                item.bookCount -= 1;
-
-            }
+        clearError(state) {
+            state.error = null;
         }
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(addToCart.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(addToCart.fulfilled, (state, action: PayloadAction<Cart>) => {
+                state.loading = false;
+                state.cart = action.payload;
+            })
+            .addCase(addToCart.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message || 'Failed to add item to cart';
+            })
+            .addCase(getCart.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getCart.fulfilled, (state, action: PayloadAction<Cart>) => {
+                state.loading = false;
+                state.cart = action.payload;
+            })
+            .addCase(getCart.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message || 'Failed to fetch cart';
+            });
     }
 });
 
-
-export const {addItemToCart, increaseQuantity, decreaseQuantity} = cartSlice.actions;
-
+export const { clearCart, clearError } = cartSlice.actions;
 export default cartSlice.reducer;
