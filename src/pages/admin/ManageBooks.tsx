@@ -2,8 +2,78 @@ import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type {AppDispatch, RootState} from "../../store/store";
 import { getAllBooks } from "../../slices/bookSlice";
-import { saveBook, getBookById, updateBook, deleteBook } from "../../api";
+import { saveBook, getBookById, updateBook, deleteBook, searchBooksByTitle, searchBooksByGenre } from "../../api";
 import type { BookData } from "../../api";
+
+interface BookItemProps {
+    book: BookData;
+    onEdit: (book: BookData) => void;
+    onDelete: (id: number) => void;
+}
+
+const BookItem = ({ book, onEdit, onDelete }: BookItemProps) => {
+    const [showDetails, setShowDetails] = useState(false);
+
+    return (
+        <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+            <div className="p-4">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-800">{book.title}</h3>
+                        <p className="text-sm text-gray-600">by {book.author}</p>
+                        <p className="text-sm text-gray-600">Genre: {book.genre}</p>
+                        <p className="text-sm font-medium text-gray-900 mt-1">
+                            {book.price} {book.currency}
+                        </p>
+                        <p className="text-sm text-gray-600">Stock: {book.stock}</p>
+                    </div>
+                    {book.coverImage && (
+                        <img 
+                            src={book.coverImage} 
+                            alt={book.title}
+                            className="h-20 w-14 object-cover rounded"
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = 'https://via.placeholder.com/150';
+                            }}
+                        />
+                    )}
+                </div>
+                
+                <div className="mt-3 flex justify-between items-center">
+                    <button
+                        onClick={() => onEdit(book)}
+                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        onClick={() => onDelete(book.id)}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium"
+                    >
+                        Delete
+                    </button>
+                    <button
+                        onClick={() => setShowDetails(!showDetails)}
+                        className="text-gray-600 hover:text-gray-800 text-sm font-medium"
+                    >
+                        {showDetails ? 'Hide Details' : 'View Details'}
+                    </button>
+                </div>
+
+                {showDetails && (
+                    <div className="mt-3 pt-3 border-t border-gray-100 text-sm text-gray-600">
+                        <p><span className="font-medium">Publisher:</span> {book.publisher}</p>
+                        <p><span className="font-medium">Published:</span> {book.publicationYear}</p>
+                        <p><span className="font-medium">Pages:</span> {book.pages}</p>
+                        <p><span className="font-medium">Language:</span> {book.language}</p>
+                        <p className="mt-2 text-gray-700">{book.description}</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
 
 export function ManageBooks() {
     const dispatch = useDispatch<AppDispatch>();
@@ -11,7 +81,11 @@ export function ManageBooks() {
     const error = useSelector((state: RootState) => state.books.error);
     const [loading, setLoading] = useState(true);
     const [searchId, setSearchId] = useState("");
+    const [searchTitle, setSearchTitle] = useState("");
+    const [searchGenre, setSearchGenre] = useState("");
     const [searchedBook, setSearchedBook] = useState<BookData | null>(null);
+    const [searchedBooks, setSearchedBooks] = useState<BookData[]>([]);
+    const [searchType, setSearchType] = useState<'id' | 'title' | 'genre'>('id');
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedBook, setSelectedBook] = useState<BookData | null>(null);
@@ -21,18 +95,44 @@ export function ManageBooks() {
     }, [dispatch]);
 
     const handleSearch = async () => {
-        if (!searchId || isNaN(parseInt(searchId))) {
-            setSearchedBook(null);
-            alert("Please enter a valid book ID");
-            return;
-        }
         try {
-            const data = await getBookById(parseInt(searchId));
-            setSearchedBook(data);
-        } catch (err: any) {
-            alert(err.response?.data?.error || "Failed to fetch book");
             setSearchedBook(null);
+            setSearchedBooks([]);
+            
+            if (searchType === 'id') {
+                if (!searchId || isNaN(parseInt(searchId))) {
+                    alert("Please enter a valid book ID");
+                    return;
+                }
+                const data = await getBookById(parseInt(searchId));
+                setSearchedBook(data);
+            } 
+            else if (searchType === 'title' && searchTitle.trim()) {
+                const data = await searchBooksByTitle(searchTitle);
+                setSearchedBooks(Array.isArray(data) ? data : [data]);
+            }
+            else if (searchType === 'genre' && searchGenre.trim()) {
+                const data = await searchBooksByGenre(searchGenre);
+                setSearchedBooks(Array.isArray(data) ? data : [data]);
+            }
+            else {
+                alert(`Please enter a valid ${searchType}`);
+            }
+        } catch (err: any) {
+            const errorMsg = err.response?.data?.error || "Failed to fetch books";
+            alert(errorMsg);
+            setSearchedBook(null);
+            setSearchedBooks([]);
         }
+    };
+    
+    const clearSearch = () => {
+        setSearchId("");
+        setSearchTitle("");
+        setSearchGenre("");
+        setSearchedBook(null);
+        setSearchedBooks([]);
+        setSearchType('id');
     };
 
     const handleAdd = () => {
@@ -92,20 +192,62 @@ export function ManageBooks() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white p-8" style={{ paddingTop: "80px" }}>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Manage Books</h1>
-            <div className="mb-6 flex items-center space-x-4">
-                <input
-                    type="text"
-                    value={searchId}
-                    onChange={(e) => setSearchId(e.target.value)}
-                    placeholder="Enter book ID"
-                    className="shadow appearance-none border rounded w-64 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-                <button
-                    onClick={handleSearch}
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                    Search
-                </button>
+            <div className="mb-6 space-y-4">
+                <div className="flex items-center space-x-4">
+                    <select 
+                        value={searchType}
+                        onChange={(e) => setSearchType(e.target.value as 'id' | 'title' | 'genre')}
+                        className="p-2 border rounded-md"
+                    >
+                        <option value="id">Search by ID</option>
+                        <option value="title">Search by Title</option>
+                        <option value="genre">Search by Genre</option>
+                    </select>
+                    
+                    {searchType === 'id' && (
+                        <input
+                            type="text"
+                            value={searchId}
+                            onChange={(e) => setSearchId(e.target.value)}
+                            placeholder="Enter book ID"
+                            className="p-2 border rounded-md flex-1"
+                        />
+                    )}
+                    
+                    {searchType === 'title' && (
+                        <input
+                            type="text"
+                            value={searchTitle}
+                            onChange={(e) => setSearchTitle(e.target.value)}
+                            placeholder="Enter book title"
+                            className="p-2 border rounded-md flex-1"
+                        />
+                    )}
+                    
+                    {searchType === 'genre' && (
+                        <input
+                            type="text"
+                            value={searchGenre}
+                            onChange={(e) => setSearchGenre(e.target.value)}
+                            placeholder="Enter genre"
+                            className="p-2 border rounded-md flex-1"
+                        />
+                    )}
+                    
+                    <button
+                        onClick={handleSearch}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                        Search
+                    </button>
+                    
+                    <button
+                        onClick={clearSearch}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                    >
+                        Clear
+                    </button>
+                </div>
                 <button
                     onClick={handleAdd}
                     className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
@@ -114,36 +256,39 @@ export function ManageBooks() {
                 </button>
             </div>
 
-            {searchedBook && (
-                <div className="mb-8 p-4 bg-white rounded-lg shadow">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-2">Searched Book</h2>
-                    <div className="space-y-1">
-                        <p><span className="font-medium">ID:</span> {searchedBook.id}</p>
-                        <p><span className="font-medium">Title:</span> {searchedBook.title}</p>
-                        <p><span className="font-medium">Author:</span> {searchedBook.author}</p>
-                        <p><span className="font-medium">Genre:</span> {searchedBook.genre}</p>
-                        <p><span className="font-medium">Price:</span> {searchedBook.price} {searchedBook.currency}</p>
-                        <p><span className="font-medium">Stock:</span> {searchedBook.stock}</p>
-                        <p><span className="font-medium">Publisher:</span> {searchedBook.publisher}</p>
-                        <p><span className="font-medium">Publication Year:</span> {searchedBook.publicationYear}</p>
-                        <p><span className="font-medium">Pages:</span> {searchedBook.pages}</p>
-                        <p><span className="font-medium">Language:</span> {searchedBook.language}</p>
-                        <p><span className="font-medium">Description:</span> {searchedBook.description}</p>
+            {searchedBook ? (
+                <div className="mt-4 p-4 bg-white rounded-lg shadow">
+                    <h3 className="text-lg font-semibold mb-4">Search Result</h3>
+                    <BookItem 
+                        book={searchedBook} 
+                        onEdit={handleEdit} 
+                        onDelete={handleDelete} 
+                    />
+                </div>
+            ) : searchedBooks.length > 0 ? (
+                <div className="mt-4">
+                    <h3 className="text-lg font-semibold mb-4">Search Results ({searchedBooks.length} found)</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {searchedBooks.map((book) => (
+                            <BookItem 
+                                key={book.id} 
+                                book={book} 
+                                onEdit={handleEdit} 
+                                onDelete={handleDelete} 
+                            />
+                        ))}
                     </div>
-                    <div className="mt-3 space-x-3">
-                        <button
-                            onClick={() => handleEdit(searchedBook)}
-                            className="text-blue-600 hover:text-blue-900 font-medium"
-                        >
-                            Edit
-                        </button>
-                        <button
-                            onClick={() => handleDelete(searchedBook.id)}
-                            className="text-red-600 hover:text-red-900 font-medium"
-                        >
-                            Delete
-                        </button>
-                    </div>
+                </div>
+            ) : (
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {books.map((book) => (
+                        <BookItem 
+                            key={book.id} 
+                            book={book} 
+                            onEdit={handleEdit} 
+                            onDelete={handleDelete} 
+                        />
+                    ))}
                 </div>
             )}
 

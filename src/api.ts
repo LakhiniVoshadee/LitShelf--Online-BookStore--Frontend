@@ -59,6 +59,16 @@ export const deleteBook = async (id: number) => {
     return response.data;
 };
 
+export const searchBooksByTitle = async (title: string) => {
+    const response = await backendApi.get(`/books/title/${encodeURIComponent(title)}`);
+    return response.data;
+};
+
+export const searchBooksByGenre = async (genre: string) => {
+    const response = await backendApi.get(`/books/genre/${encodeURIComponent(genre)}`);
+    return response.data;
+};
+
 export interface UserDto {
     id: number;
     username: string;
